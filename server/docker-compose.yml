@@ -1,0 +1,36 @@
+version: '3'
+services:
+  db:
+    image: mongo
+    hostname: db
+    restart: on-failure
+    environment:
+      - GET_HOST_FROM=dns
+      - MONGO_INITDB_ROOT_USERNAME=${DB_USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${DB_PASS}
+    ports:
+      - '27017:27017'
+    networks:
+      - kakaponet
+  app:
+    build: .
+    hostname: api
+    restart: on-failure
+    environment:
+      - PORT
+    networks:
+      - kakaponet
+    ports:
+      - '${PORT}:${PORT}'
+    depends_on:
+      - db
+    links:
+      - db
+    volumes:
+      - './src:/usr/src/app/src'
+      - './package.json:/usr/src/app/package.json'
+      - './package-lock.json:/usr/src/app/package-lock.json'
+      - './.env:/usrc/src/app/.env'
+networks:
+  kakaponet:
+    driver: bridge
